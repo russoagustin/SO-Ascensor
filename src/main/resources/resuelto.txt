@@ -1,0 +1,61 @@
+/*
+*“Un ascensor en el que caben cuatro personas atiende las llamadas
+* que se le hacen desde varios pisos. En estos pisos llegan personas
+* que quieren subir o bajar a otros pisos. Desarrollar el
+*  código del proceso ascensor y el código de los procesos persona.”
+* */
+program simulacion;
+
+const
+NUMPISOS=10;
+Nper=10;
+
+var
+subir, npers:integer;
+pisoact:(0..NUMPISOS-1);
+resource ascensor:pisoact, npers;
+
+process ascensor;
+begin
+    repeat
+       region ascensor do
+       begin
+        pisoact:=pisoact+subir;
+        if pisoact=NUMPISOS-1 then
+        if pisoact=0 then subir:=1
+       end
+    forever
+end;
+subir:=-1;
+
+process type persona (origen, destino:integer);
+begin
+    region ascensor when (pisoact=origen) and (npers<4) do
+    npers:=npers+1;
+    (* Entra en el ascensor. *)
+    region ascensor when (pisoact=destino) do
+    npers:=npers-1
+end;
+
+begin
+    npers:=0;
+    subir:=1;
+    pisoact:=0;
+    cobegin
+        ascensor;
+        for i:=1 to Nper do
+            persona[i] (random (NUMPISOS), random(NUMPISOS));
+    coend
+end
+var
+    proceso=[1..t] of terminal;
+begin
+    for n:=0 to i-1 do
+    libre[k]:=true;
+    impresoras:=i;
+    cobegin
+        for n:=1 to t do
+            proceso[n] (n);
+        coend
+end.
+
