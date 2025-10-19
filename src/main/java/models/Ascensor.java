@@ -6,63 +6,101 @@
 * */
 package models;
 
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.Condition;
 
 public class Ascensor implements Runnable{
+
     private static final Integer CANT_PISOS = 10;
+    private static final Integer MAX_PERSONAS = 4;
     public Integer numPersonas = 0;
     private Integer subir = 1; //vale 1 o -1
     public Integer pisoActual=0;
+
+    Lock lock = new ReentrantLock();
+    Condition lleno = lock.newCondition();
+    Condition pisoCambiado = lock.newCondition();
 
     public Ascensor(){
 
     }
 
-
-//INICIO DEL PROCESO
+    //INICIO DEL PROCESO
     @Override
     public void run() {
         while (true) {
-            pisoActual = pisoActual + subir;
-            if (pisoActual == CANT_PISOS - 1) {
+            lock.lock();
+            try {
+                if (pisoActual == CANT_PISOS - 1) {
                 subir = -1;
-            }
-            if (pisoActual == 0) {
-                subir = 1;
-            }
+                }
 
-            //Thread.sleep(1000); // Simula el tiempo de movimiento
+                if (pisoActual == 0) {
+                    subir = 1;
+                }
+
+                pisoActual = pisoActual + subir;
+                pisoCambiado.signalAll();
+            } finally {
+                lock.unlock();
+            }
+            
+            try{
+                Thread.sleep(400);
+            }catch(InterruptedException e){}
         }
     }
 
-    //Monitores
-    public void subir(){
-/*
-            // Mientras NO se cumpla la condición de entrada (piso y espacio)...
-            while (pisoActual != pisoOrigen || numPersonas >= CAPACIDAD) {
-                // Si la condición de piso no se cumple, esperamos en ascensorDisponible
-                if (pisoActual != pisoOrigen) {
-                    System.out.println("Persona espera en piso " + pisoOrigen + " (Ascensor no ha llegado).");
-                    // Si la condición de espacio no se cumple (ascensor lleno), esperamos en espacioDisponible
-                } else if (numPersonas >= CAPACIDAD) {
-                    System.out.println("Persona espera en piso " + pisoOrigen + " (Ascensor lleno).");
-                }
+    public void esperarPiso(Integer piso) throws InterruptedException{
+        lock.lock();
+        try{
+            while (pisoActual != piso) {
+                pisoCambiado.await();
             }
-*/
-            // Condición cumplida: Entra en el ascensor
+        }finally{
+            lock.unlock();
+        }
+    }
+
+    public Integer getPisoActual(){
+        lock.lock();
+        try{
+            return pisoActual;
+        }finally{
+            lock.unlock();
+        }
+    }
+
+    
+    public void subir(Integer personaId) throws InterruptedException {
+        lock.lock();
+        try{
+            while (numPersonas == MAX_PERSONAS){
+                lleno.await();
+                //System.out.println("lleno");
+            }
+
             numPersonas++;
-            //System.out.println("Personas actuales: " + numPersonas);
-            //System.out.println("--> SUBE. Persona entra en piso " + pisoActual + ". Ocupación: " + numPersonas);
+            System.out.println("Persona: " + personaId + " se SUBE en piso: " + pisoActual);
+        }finally{
+            lock.unlock();
+        }
 
     }
 
 
-    public void bajar(){
-        numPersonas--;
-        //System.out.println("Personas actuales: " + numPersonas);
-        //System.out.println("Persona baja en piso " + pisoActual + ". Ocupación: " + numPersonas);
+    public void bajar(Integer personaId){
+        lock.lock();
+        try{
+            numPersonas--;
+            System.out.println("Persona: " + personaId + " se BAJA en piso: " + pisoActual);
+            lleno.signalAll();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }finally {
+            lock.unlock();
+        }
     }
 
 

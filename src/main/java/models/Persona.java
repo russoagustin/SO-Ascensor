@@ -6,15 +6,16 @@
  * */
 package models;
 
+
 public class Persona implements Runnable{
 
     //Uso los casos donde las personas deben bajar y subir.
-    public enum Direccion { SUBIR, BAJAR }
     private final Ascensor ascensor;
     private final int id;
     private final int pisoOrigen;
     private final int pisoDestino;
-    private boolean estaAdentro = false;
+    private boolean adentro = false;
+
 
     public Persona(int id, int pisoOrigen, int pisoDestino, Ascensor ascensor){
         if (pisoOrigen == pisoDestino) {
@@ -26,35 +27,23 @@ public class Persona implements Runnable{
         this.ascensor = ascensor;
     }
 
-
-    public int getId()            { return id; }
-    public int getPisoOrigen()    { return pisoOrigen; }
-    public int getPisoDestino()   { return pisoDestino; }
-    public Direccion getDireccion(){ return pisoDestino > pisoOrigen ? Direccion.SUBIR : Direccion.BAJAR; }
-
     public void run() {
-        while (true){
-            if (ascensor.pisoActual == pisoOrigen && !estaAdentro){
-                ascensor.subir();
-                estaAdentro = true;
-                System.out.println("persona " + this.id + " se SUBE en piso " + pisoOrigen + " personas actuales: " + ascensor.numPersonas);
-            }
-            if (ascensor.pisoActual == pisoDestino && estaAdentro){
-                ascensor.bajar();
-                System.out.println("persona " + this.id + " se BAJA en piso " + pisoDestino + " personas actuales: " + ascensor.numPersonas);
-                break;
-            }
+        try{
+            ascensor.esperarPiso(this.pisoOrigen);
+
+            ascensor.subir(this.id);
+            adentro = true;
+
+            ascensor.esperarPiso(this.pisoDestino);
+
+            ascensor.bajar(this.id);
+            adentro = false;
+            
+            System.out.println("Persona: " + this.id + " completó viaje " + this.pisoOrigen + " -> " + this.pisoDestino);
+
+        }catch(InterruptedException e){
+            Thread.currentThread().interrupt();
         }
     }
-
-    public String toString() {
-        return "Persona{" +
-                "id=" + id +
-                ", origen=" + pisoOrigen +
-                ", destino=" + pisoDestino +
-                ", dir=" + getDireccion() +
-                '}';
-    }
-
 
 }
