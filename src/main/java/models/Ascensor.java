@@ -47,7 +47,7 @@ public class Ascensor implements Runnable{
             }
             
             try{
-                Thread.sleep(400);
+                Thread.sleep(100);
             }catch(InterruptedException e){}
         }
     }
@@ -72,17 +72,21 @@ public class Ascensor implements Runnable{
         }
     }
 
-    
-    public void subir(Integer personaId) throws InterruptedException {
+
+    public boolean subir(Integer personaId, Integer pisoOrigen) throws InterruptedException {
         lock.lock();
         try{
             while (numPersonas == MAX_PERSONAS){
+                System.out.println("ASCENSOR LLENO, Persona: " + personaId + " espera");
                 lleno.await();
-                //System.out.println("lleno");
             }
+            if(pisoActual.equals(pisoOrigen)){
+                numPersonas++;
+                System.out.println("Persona: " + personaId + " se SUBE en piso: " + pisoActual);
+                return true;
+            }
+            return false;
 
-            numPersonas++;
-            System.out.println("Persona: " + personaId + " se SUBE en piso: " + pisoActual);
         }finally{
             lock.unlock();
         }
@@ -102,7 +106,5 @@ public class Ascensor implements Runnable{
             lock.unlock();
         }
     }
-
-
 }
 

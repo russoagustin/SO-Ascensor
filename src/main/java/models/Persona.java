@@ -14,7 +14,6 @@ public class Persona implements Runnable{
     private final int id;
     private final int pisoOrigen;
     private final int pisoDestino;
-    private boolean adentro = false;
 
 
     public Persona(int id, int pisoOrigen, int pisoDestino, Ascensor ascensor){
@@ -31,15 +30,15 @@ public class Persona implements Runnable{
         try{
             ascensor.esperarPiso(this.pisoOrigen);
 
-            ascensor.subir(this.id);
-            adentro = true;
+            while(!ascensor.subir(this.id, pisoOrigen)){
+                ascensor.esperarPiso(this.pisoOrigen);
+            }
 
             ascensor.esperarPiso(this.pisoDestino);
 
             ascensor.bajar(this.id);
-            adentro = false;
             
-            System.out.println("Persona: " + this.id + " completó viaje " + this.pisoOrigen + " -> " + this.pisoDestino);
+            //System.out.println("Persona: " + this.id + " completó viaje " + this.pisoOrigen + " -> " + this.pisoDestino);
 
         }catch(InterruptedException e){
             Thread.currentThread().interrupt();
