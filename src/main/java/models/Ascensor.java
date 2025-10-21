@@ -36,7 +36,7 @@ public class Ascensor implements Runnable {
             }
 
             try {
-                Thread.sleep(2400); // controla la velocidad de desplazamiento
+                Thread.sleep(1000); // controla la velocidad de desplazamiento
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
