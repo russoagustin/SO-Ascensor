@@ -19,10 +19,11 @@ public class Main {
         // Procesos Personas con origen y destino fijos
         personas.add(new Persona(0, 0, 5, ascensor)); // del piso 0 al 5
         personas.add(new Persona(1, 3, 8, ascensor)); // del piso 3 al 8
-        personas.add(new Persona(2, 6, 2, ascensor)); // del piso 6 al 2
+        personas.add(new Persona(2, 4, 8, ascensor)); // del piso 6 al 2
         personas.add(new Persona(3, 9, 1, ascensor)); // del piso 9 al 1
-        personas.add(new Persona(4, 4, 7, ascensor)); // del piso 4 al 7
+        personas.add(new Persona(4, 4, 2, ascensor)); // del piso 4 al 7
         personas.add(new Persona(5, 3, 5, ascensor)); // del piso 0 al 5
+        personas.add(new Persona(6, 3, 5, ascensor)); // del piso 0 al 5
 
         //  hilos de personas
         for (Persona p : personas) {

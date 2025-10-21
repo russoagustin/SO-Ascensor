@@ -58,6 +58,7 @@ public class Ascensor implements Runnable {
         lock.lock();
         try {
             while (numPersonas == MAX_PERSONAS) {
+                System.out.println("Ascensor lleno persona: " + p.getId() + " espera");
                 lleno.await();
             }
 
