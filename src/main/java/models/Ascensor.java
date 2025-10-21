@@ -1,110 +1,115 @@
-/*
-*“Un ascensor en el que caben cuatro personas atiende las llamadas
-* que se le hacen desde varios pisos. En estos pisos llegan personas
-* que quieren subir o bajar a otros pisos. Desarrollar el
-*  código del proceso ascensor y el código de los procesos persona.”
-* */
 package models;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class Ascensor implements Runnable{
+public class Ascensor implements Runnable {
 
-    private static final Integer CANT_PISOS = 10;
-    private static final Integer MAX_PERSONAS = 4;
-    public Integer numPersonas = 0;
-    private Integer subir = 1; //vale 1 o -1
-    public Integer pisoActual=0;
+    private static final int CANT_PISOS = 10;
+    private static final int MAX_PERSONAS = 4;
 
-    Lock lock = new ReentrantLock();
-    Condition lleno = lock.newCondition();
-    Condition pisoCambiado = lock.newCondition();
+    private int pisoActual = 0;
+    private int subir = 1; // 1 = subiendo, -1 = bajando
+    private int numPersonas = 0;
 
-    public Ascensor(){
+    private final Lock lock = new ReentrantLock();
+    private final Condition lleno = lock.newCondition();
+    private final Condition pisoCambiado = lock.newCondition();
 
-    }
+    private final List<Persona> dentro = new ArrayList<>();
 
-    //INICIO DEL PROCESO
     @Override
     public void run() {
         while (true) {
             lock.lock();
             try {
-                if (pisoActual == CANT_PISOS - 1) {
-                subir = -1;
-                }
+                if (pisoActual == CANT_PISOS - 1) subir = -1;
+                if (pisoActual == 0) subir = 1;
 
-                if (pisoActual == 0) {
-                    subir = 1;
-                }
-
-                pisoActual = pisoActual + subir;
+                pisoActual += subir;
                 pisoCambiado.signalAll();
             } finally {
                 lock.unlock();
             }
-            
-            try{
-                Thread.sleep(100);
-            }catch(InterruptedException e){}
+
+            try {
+                Thread.sleep(2400); // controla la velocidad de desplazamiento
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
-    public void esperarPiso(Integer piso) throws InterruptedException{
+    public void esperarPiso(int piso) throws InterruptedException {
         lock.lock();
-        try{
+        try {
             while (pisoActual != piso) {
                 pisoCambiado.await();
             }
-        }finally{
+        } finally {
             lock.unlock();
         }
     }
 
-    public Integer getPisoActual(){
+    public boolean subir(Persona p) throws InterruptedException {
         lock.lock();
-        try{
-            return pisoActual;
-        }finally{
-            lock.unlock();
-        }
-    }
-
-
-    public boolean subir(Integer personaId, Integer pisoOrigen) throws InterruptedException {
-        lock.lock();
-        try{
-            while (numPersonas == MAX_PERSONAS){
-                System.out.println("ASCENSOR LLENO, Persona: " + personaId + " espera");
+        try {
+            while (numPersonas == MAX_PERSONAS) {
                 lleno.await();
             }
-            if(pisoActual.equals(pisoOrigen)){
+
+            if (pisoActual == p.getPisoOrigen()) {
                 numPersonas++;
-                System.out.println("Persona: " + personaId + " se SUBE en piso: " + pisoActual);
+                dentro.add(p);
+                System.out.println("Persona: " + p.getId() + " se SUBE en piso: " + pisoActual);
                 return true;
             }
             return false;
-
-        }finally{
+        } finally {
             lock.unlock();
         }
-
     }
 
-
-    public void bajar(Integer personaId){
+    public void bajar(Persona p) {
         lock.lock();
-        try{
-            numPersonas--;
-            System.out.println("Persona: " + personaId + " se BAJA en piso: " + pisoActual);
-            lleno.signalAll();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }finally {
+        try {
+            if (dentro.remove(p)) {
+                numPersonas--;
+                System.out.println("Persona: " + p.getId() + " se BAJA en piso: " + pisoActual);
+                lleno.signalAll();
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public boolean estaDentro(Persona p) {
+        lock.lock();
+        try {
+            return dentro.contains(p);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public int getNumPersonas() {
+        lock.lock();
+        try {
+            return numPersonas;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public int getPisoActual() {
+        lock.lock();
+        try {
+            return pisoActual;
+        } finally {
             lock.unlock();
         }
     }
 }
-

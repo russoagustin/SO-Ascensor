@@ -1,34 +1,40 @@
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JFrame;
 import models.Ascensor;
+import views.AscensorGUI;
 import models.Persona;
 
 
 public class Main {
+    private static final int ANCHO = 350;
+    private static final int ALTO = 600;
 
     public static void main(String[] args) {
         Ascensor ascensor = new Ascensor();
-        Thread hiloAscensor = new Thread(ascensor);
-        Thread persona1 = new Thread(new Persona(1,0,9,ascensor));
-        Thread persona2 = new Thread(new Persona(2,2,5,ascensor));
-        Thread persona3 = new Thread(new Persona(3,2,7,ascensor));
-        Thread persona4 = new Thread(new Persona(4,3,11,ascensor));
-        Thread persona5 = new Thread(new Persona(5,6,9,ascensor));
-        Thread persona6 = new Thread(new Persona(6,6,9,ascensor));
-        Thread persona7 = new Thread(new Persona(7,6,9,ascensor));
-        Thread persona8 = new Thread(new Persona(8,6,9,ascensor));
-        Thread persona9 = new Thread(new Persona(9,6,9,ascensor));
+        new Thread(ascensor).start();
 
+        List<Persona> personas = new ArrayList<>();
 
-        hiloAscensor.start();
-        persona1.start();
-        persona2.start();
-        persona3.start();
-        persona4.start();
-        persona5.start();
-        persona6.start();
-        persona7.start();
-        persona8.start();
-        persona9.start();
+        // Personas con origen y destino fijos
+        personas.add(new Persona(0, 0, 5, ascensor)); // del piso 0 al 5
+        personas.add(new Persona(1, 3, 8, ascensor)); // del piso 3 al 8
+        personas.add(new Persona(2, 6, 2, ascensor)); // del piso 6 al 2
+        personas.add(new Persona(3, 9, 1, ascensor)); // del piso 9 al 1
+        personas.add(new Persona(4, 4, 7, ascensor)); // del piso 4 al 7
 
+        // lanzar hilos de personas
+        for (Persona p : personas) {
+            new Thread(p).start();
+        }
+
+        // ventana
+        JFrame ventana = new JFrame("Simulación Ascensor (Swing)");
+        AscensorGUI panel = new AscensorGUI(ascensor, personas);
+        ventana.add(panel);
+        ventana.setSize(ANCHO, ALTO + 40);
+        ventana.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        ventana.setVisible(true);
     }
 
 }
