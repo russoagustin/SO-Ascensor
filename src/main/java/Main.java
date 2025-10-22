@@ -31,7 +31,7 @@ public class Main {
         }
 
         // ventana
-        JFrame ventana = new JFrame("Simulación Ascensor (Swing)");
+        JFrame ventana = new JFrame("Simulación Ascensor");
         AscensorGUI panel = new AscensorGUI(ascensor, personas);
         ventana.add(panel);
         ventana.pack();

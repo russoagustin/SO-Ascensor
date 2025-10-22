@@ -3,7 +3,9 @@ package views;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+
 import models.Ascensor;
+import models.EPersonaEstado;
 import models.Persona;
 
 public class AscensorGUI extends JPanel implements Runnable {
@@ -52,8 +54,6 @@ public class AscensorGUI extends JPanel implements Runnable {
         g2d.setColor(new Color(139, 69, 19)); // marrón tierra
         g2d.fillRect(0, ALTO , getWidth(), 20); // 20 píxeles de alto en la base
 
-        
-
         // Apariencia del EDIFICIO
         g2d.setColor(new Color(176, 174, 245));
         g2d.fillRect(50, 0, 200, ALTO);
@@ -66,7 +66,6 @@ public class AscensorGUI extends JPanel implements Runnable {
 
         g2d.setColor(Color.BLACK);
         g2d.drawRect(ejeX, 0, ejeAncho + 6, ALTO - 1); // borde negro
-
 
         // pisos
         g2d.setColor(Color.BLACK);
@@ -87,12 +86,13 @@ public class AscensorGUI extends JPanel implements Runnable {
         g2d.setColor(Color.LIGHT_GRAY);
         g2d.fillRect(121, yAscensor, 65, ALTURA_PISO - 20);
 
-        int[] contadorPorPiso = new int[CANT_PISOS];
-        int[] contadorPorPisoEspera = new int[CANT_PISOS];
+        int[] personasEsperando = {0,0,0,0,0,0,0,0,0,0};
+        int[] personasCompletado = {0,0,0,0,0,0,0,0,0,0};
+
         int cantidadAdentro = 0;
 
         for (Persona p : personas) {
-            if (ascensor.estaDentro(p)) {
+            if (p.getEstado().equals(EPersonaEstado.DENTRO)) {
                 int x = 130;
                 int y = yAscensor + 15;
                 int desplazamiento = cantidadAdentro * 14;
@@ -100,22 +100,22 @@ public class AscensorGUI extends JPanel implements Runnable {
                 // cabeza
                 g2d.setColor(new Color(50, 100, 180));
                 g2d.fillOval(x, y, 10, 10);
-
                 // cuerpo
                 g2d.fillOval(x - 1, y + 8, 12, 12);
-
                 // número de destino dentro del cuerpo
                 g2d.setFont(new Font("Arial", Font.PLAIN, 9));
                 g2d.setColor(Color.WHITE);
                 g2d.drawString("" + p.getPisoDestino(), x + 2, y + 18);
                 cantidadAdentro ++;
-            } else if (p.isViajeTerminado()) {
+
+            } else if (p.getEstado().equals(EPersonaEstado.COMPLETADO)) {
                 int piso = p.getPisoDestino();
                 int y = ALTO - (piso + 1) * ALTURA_PISO + ALTURA_PISO / 2 - 15;
-                int desplazamiento = contadorPorPiso[piso] * 14; // 14 px entre personas
+                int desplazamiento = personasCompletado[piso] * 14; // 14 px entre personas
                 int x = 190 + desplazamiento;
 
                 g2d.setColor(new Color(0, 150, 20));
+
                 // cabeza
                 g2d.fillOval(x, y, 10, 10);
 
@@ -127,11 +127,12 @@ public class AscensorGUI extends JPanel implements Runnable {
                 g2d.setColor(Color.WHITE);
                 g2d.drawString("" + piso, x + 2, y + 18);
 
-                contadorPorPiso[piso]++;
+                personasCompletado[piso]++;
+            
             } else {
                 int y = ALTO - (p.getPisoOrigen() + 1) * ALTURA_PISO + ALTURA_PISO / 2;
                 int piso = p.getPisoOrigen();
-                int desplazamiento = contadorPorPisoEspera[piso] * 14;
+                int desplazamiento = personasEsperando[piso] * 14;
                 // cabeza
                 g2d.setColor(new Color(50, 100, 180));
                 g2d.fillOval(200 +desplazamiento, y, 10, 10);
@@ -143,10 +144,9 @@ public class AscensorGUI extends JPanel implements Runnable {
                 g2d.setFont(new Font("Arial", Font.PLAIN, 9));
                 g2d.setColor(Color.WHITE);
                 g2d.drawString("" + p.getPisoDestino(), 202 + desplazamiento, y + 18);
-                contadorPorPisoEspera[piso] ++;
+                personasEsperando[piso] ++;
             }
         }
-
         // Estilos del letrero
         // cartel de información
         Font fuente = new Font("Arial", Font.BOLD, 16); // fuente más grande y en negrita

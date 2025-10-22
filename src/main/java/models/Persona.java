@@ -14,7 +14,7 @@ public class Persona implements Runnable{
     private final int id;
     private final int pisoOrigen;
     private final int pisoDestino;
-    private boolean viajeTerminado = false;
+    private EPersonaEstado estado = EPersonaEstado.ESPERANDO;
 
 
 
@@ -49,28 +49,27 @@ public class Persona implements Runnable{
         try{  
             ascensor.esperarPiso(this.pisoOrigen);
             // A partir de aquí el ascensor ya llegó
-        
+    
             while(!ascensor.subir(this)){
                 //La persona espera hasta que alguien se baje.
                 ascensor.esperarPiso(this.pisoOrigen);
             }
+
+            estado = EPersonaEstado.DENTRO;
+
             //En este momento la persona se encuentra viajando así que espera hasta llegar a su piso.
+
             ascensor.esperarPiso(this.pisoDestino);
             ascensor.bajar(this);
-            this.viajeTerminado = true;
-            //System.out.println("Persona: " + this.id + " completó viaje " + this.pisoOrigen + " -> " + this.pisoDestino);
+            estado = EPersonaEstado.COMPLETADO;
+            
         }catch(InterruptedException e){
             Thread.currentThread().interrupt();
         }
     }
 
 
-    //Comportamiento de persona:
-    public boolean isViajeTerminado() {
-        return viajeTerminado;
-    }
-
-    public void setViajeTerminado(boolean viajeTerminado) {
-        this.viajeTerminado = viajeTerminado;
+    public EPersonaEstado getEstado(){
+        return this.estado;
     }
 }

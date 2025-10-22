@@ -87,15 +87,6 @@ public class Ascensor implements Runnable {
         }
     }
 
-    public boolean estaDentro(Persona p) {
-        lock.lock();
-        try {
-            return dentro.contains(p);
-        } finally {
-            lock.unlock();
-        }
-    }
-
     public int getNumPersonas() {
         lock.lock();
         try {
