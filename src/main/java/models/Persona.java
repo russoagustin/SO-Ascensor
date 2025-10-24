@@ -49,20 +49,15 @@ public class Persona implements Runnable{
         try{  
             ascensor.esperarPiso(this.pisoOrigen);
             // A partir de aquí el ascensor ya llegó
-    
+
             while(!ascensor.subir(this)){
                 //La persona espera hasta que alguien se baje.
                 ascensor.esperarPiso(this.pisoOrigen);
             }
-
-            estado = EPersonaEstado.DENTRO;
-
             //En este momento la persona se encuentra viajando así que espera hasta llegar a su piso.
-
             ascensor.esperarPiso(this.pisoDestino);
+
             ascensor.bajar(this);
-            estado = EPersonaEstado.COMPLETADO;
-            
         }catch(InterruptedException e){
             Thread.currentThread().interrupt();
         }
@@ -71,5 +66,9 @@ public class Persona implements Runnable{
 
     public EPersonaEstado getEstado(){
         return this.estado;
+    }
+
+    public void setEstado(EPersonaEstado estado){
+        this.estado = estado;
     }
 }

@@ -1,7 +1,6 @@
 package models;
 
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -18,8 +17,6 @@ public class Ascensor implements Runnable {
     private final Lock lock = new ReentrantLock();
     private final Condition lleno = lock.newCondition();
     private final Condition pisoCambiado = lock.newCondition();
-
-    private final List<Persona> dentro = new ArrayList<>();
 
     @Override
     public void run() {
@@ -64,8 +61,8 @@ public class Ascensor implements Runnable {
 
             if (pisoActual == p.getPisoOrigen()) {
                 numPersonas++;
-                dentro.add(p);
                 System.out.println("Persona: " + p.getId() + " se SUBE en piso: " + pisoActual);
+                p.setEstado(EPersonaEstado.DENTRO);
                 return true;
             }
             return false;
@@ -77,10 +74,11 @@ public class Ascensor implements Runnable {
     public void bajar(Persona p) {
         lock.lock();
         try {
-            if (dentro.remove(p)) {
+            if (p.getEstado().equals(EPersonaEstado.DENTRO)) {
                 numPersonas--;
                 System.out.println("Persona: " + p.getId() + " se BAJA en piso: " + pisoActual);
                 lleno.signalAll();
+                p.setEstado(EPersonaEstado.COMPLETADO);
             }
         } finally {
             lock.unlock();
